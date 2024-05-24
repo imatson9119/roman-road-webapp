@@ -94,6 +94,22 @@ export function sanitizeText(text: string): string{
   return cleanWhitespace(text.replace(/[^\w\s]/g, "").toLowerCase());
 }
 
+export function removeUnsanitaryItems(arr: string[]): string[] {
+  let ret: string[] = []
+
+  for (let item of arr) {
+    if (sanitizeText(item).length > 0){
+      ret.push(item);
+    } else {
+      if (ret.length > 0) {
+        ret[ret.length - 1] = ret[ret.length - 1] + ` ${item} `;
+      }
+    }
+  }
+  
+  return ret;
+}
+
 export function cleanWhitespace(text: string): string{
   return text.split(/\s+/).join(" ").trim();
 }

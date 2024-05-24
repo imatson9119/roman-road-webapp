@@ -2,7 +2,7 @@ import { BibleMetadata, BibleWord, Book, IBible, WordMap, AnchorType, DiffType, 
 import { BiblePassage } from './BiblePassage';
 import { BibleIterator } from './BibleIterator';
 import { BibleReference } from './BibleReference';
-import { addToMapValue, cleanWhitespace, getWordChange, sanitizeText } from '../utils/utils';
+import { addToMapValue, cleanWhitespace, removeUnsanitaryItems, getWordChange, sanitizeText } from '../utils/utils';
 import { diffWords } from 'diff';
 
 export class Bible implements IBible {
@@ -208,13 +208,13 @@ export class Bible implements IBible {
 
   getBibleDiff(
     attempt: string,
-    start_loc: number,
-    end_loc: number
+    startLoc: number,
+    endLoc: number
   ): BibleDiff | undefined {
-    if (start_loc < 0 || end_loc < 0 || start_loc > end_loc) {
+    if (startLoc < 0 || endLoc < 0 || startLoc > endLoc) {
       return undefined;
     }
-    let scripture = this.getText(start_loc, end_loc);
+    let scripture = this.getText(startLoc, endLoc);
     if (!scripture) {
       console.log('Error getting text');
       return undefined;
@@ -225,46 +225,46 @@ export class Bible implements IBible {
         ignoreWhitespace: true,
       })
     );
-    let scripture_arr = sanitizeText(scripture).split(' ');
-    let attempt_arr = sanitizeText(attempt).split(' ');
-    let scripture_index = 0;
-    let attempt_index = 0;
-    let diff_index = 0;
-    let change_index = 0;
-    let cur_loc = start_loc;
+    let scriptureArr = removeUnsanitaryItems(cleanWhitespace(scripture).split(' '));
+    let attemptArr = removeUnsanitaryItems(cleanWhitespace(attempt).split(' '));
+    let scriptureIndex = 0;
+    let attemptIndex = 0;
+    let diffIndex = 0;
+    let changeIndex = 0;
+    let curLoc = startLoc;
     let done = false;
     let bibleDiff: BibleDiff = {
       m: this.m,
-      p: this.getPassage(start_loc, end_loc).toString() || '',
-      i: start_loc,
-      j: end_loc,
+      p: this.getPassage(startLoc, endLoc).toString() || '',
+      i: startLoc,
+      j: endLoc,
       v: [],
     };
 
     for (let book of this.v) {
-      if (cur_loc < book.m.i + book.m.l && !done) {
+      if (curLoc < book.m.i + book.m.l && !done) {
         let bookDiff: BookDiff = {
           m: book.m,
           v: [],
         };
         for (let chapter of book.v) {
-          if (cur_loc < chapter.m.i + chapter.m.l && !done) {
+          if (curLoc < chapter.m.i + chapter.m.l && !done) {
             let chapterDiff: ChapterDiff = {
               m: chapter.m,
               v: [],
             };
             for (let verse of chapter.v) {
-              if (cur_loc < verse.m.i + verse.m.l && !done) {
+              if (curLoc < verse.m.i + verse.m.l && !done) {
                 let verseDiff: VerseDiff = {
                   m: verse.m,
                   v: [],
                 };
                 while (
-                  cur_loc < verse.m.i + verse.m.l &&
-                  diff_index < diff.length &&
-                  change_index < diff[diff_index].v.length
+                  curLoc < verse.m.i + verse.m.l &&
+                  diffIndex < diff.length &&
+                  changeIndex < diff[diffIndex].v.length
                 ) {
-                  let diffType = diff[diff_index].t;
+                  let diffType = diff[diffIndex].t;
                   if (
                     verseDiff.v.length == 0 ||
                     diffType != verseDiff.v[verseDiff.v.length - 1].t
@@ -272,34 +272,34 @@ export class Bible implements IBible {
                     verseDiff.v.push({
                       t: diffType,
                       v: [],
-                      i: cur_loc,
+                      i: curLoc,
                     });
                   }
                   if (diffType == DiffType.Added) {
                     verseDiff.v[verseDiff.v.length - 1].v.push(
-                      attempt_arr[attempt_index]
+                      attemptArr[attemptIndex]
                     );
-                    attempt_index += 1;
+                    attemptIndex += 1;
                   } else if (diffType == DiffType.Removed) {
                     verseDiff.v[verseDiff.v.length - 1].v.push(
-                      scripture_arr[scripture_index]
+                      scriptureArr[scriptureIndex]
                     );
-                    scripture_index += 1;
-                    cur_loc += 1;
+                    scriptureIndex += 1;
+                    curLoc += 1;
                   } else {
                     verseDiff.v[verseDiff.v.length - 1].v.push(
-                      scripture_arr[scripture_index]
+                      scriptureArr[scriptureIndex]
                     );
-                    attempt_index += 1;
-                    scripture_index += 1;
-                    cur_loc += 1;
+                    attemptIndex += 1;
+                    scriptureIndex += 1;
+                    curLoc += 1;
                   }
-                  change_index += 1;
-                  if (change_index == diff[diff_index].v.length) {
-                    change_index = 0;
-                    diff_index += 1;
+                  changeIndex += 1;
+                  if (changeIndex == diff[diffIndex].v.length) {
+                    changeIndex = 0;
+                    diffIndex += 1;
                   }
-                  if (diff_index == diff.length) {
+                  if (diffIndex == diff.length) {
                     done = true;
                     break;
                   }

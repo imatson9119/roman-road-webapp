@@ -16,10 +16,11 @@
             <span class="added">{{ vDiff.v.join(" ") }}</span><span>&nbsp;</span>
           </ng-container>
           <ng-container *ngIf="vDiff.t === diffTypes.Removed && this.type !== displayTypes.attempt">
-            <span class="removed">{{ scripture.slice(vDiff.i - diff!.i, vDiff.i + vDiff.v.length - this.diff!.i).join(" ") }}</span><span>&nbsp;</span>
+            <!-- <span class="removed">{{ scripture.slice(vDiff.i - diff!.i, vDiff.i + vDiff.v.length - this.diff!.i).join(" ") }}</span><span>&nbsp;</span> -->
+            <span class="removed">{{ vDiff.v.join(" ") }}</span><span>&nbsp;</span>
           </ng-container>
           <ng-container *ngIf="vDiff.t === diffTypes.Unchanged">
-            <span>{{ scripture.slice(vDiff.i - diff!.i, vDiff.i + vDiff.v.length - this.diff!.i).join(" ") }}</span><span>&nbsp;</span>
+            <span>{{ vDiff.v.join(" ") }}</span><span>&nbsp;</span>
           </ng-container>
         </ng-container>
       </ng-container>
