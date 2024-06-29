@@ -208,7 +208,6 @@ export class InputComponent
   }
 
   onKeyDown(e: KeyboardEvent) {
-    console.log(e);
     if (e.code === 'Enter') {
       if (e.shiftKey || e.ctrlKey || e.metaKey) {
         this.attempt += '\n';
