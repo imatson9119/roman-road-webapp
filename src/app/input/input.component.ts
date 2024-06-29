@@ -208,13 +208,22 @@ export class InputComponent
   }
 
   onKeyDown(e: KeyboardEvent) {
-    if (e.code === 'Enter' && !e.shiftKey) {
+    console.log(e);
+    if (e.code === 'Enter') {
+      if (e.shiftKey || e.ctrlKey || e.metaKey) {
+        this.attempt += '\n';
+        return;
+      }
       e.preventDefault();
       this.submit();
+    } else if (e.code === 'KeyV' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      this.toggleVoice();
     }
   }
 
   toggleVoice() {
+    console.log('toggle voice')
     if (annyang.isListening()) {
       annyang.abort();
     } else {
