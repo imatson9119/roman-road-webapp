@@ -1,0 +1,78 @@
+<div class="input-container" *ngIf="this.bible; else loading">
+  <h2>Practice Recitation</h2>
+  <div class="toolbar">
+    <button
+      [disabled]="!this.passage || this.inputState != InputState.ERRORS"
+      mat-fab
+      extended
+      color="primary"
+      (click)="this.fixErrors()"
+    >
+      <mat-icon>fact_check</mat-icon>
+      Fix errors
+    </button>
+    <button
+      [disabled]="!this.passage"
+      mat-fab
+      extended
+      color="primary"
+      (click)="this.nextWord()"
+    >
+      <mat-icon>lightbulb</mat-icon>
+      Next word
+    </button>
+  </div>
+  <div
+    #input
+    class="input"
+    placeholder="In the beginning, God..."
+    (keyup)="this.onKeyDown($event)"
+    (click)="this.annyang.abort()"
+    (paste)="this.handlePaste($event)"
+    contenteditable="true"
+  ></div>
+  <div class="button-container">
+    <div class="passage">
+      <div class="passage-label">
+        {{ this.passage ? this.passage.toString() : "No passage linked" }}
+      </div>
+      <mat-spinner
+        *ngIf="inputState == InputState.WAITING"
+        matTooltip="Checking your input..."
+        diameter="20"
+      ></mat-spinner>
+      <mat-icon
+        *ngIf="inputState == InputState.NO_LOCK"
+        class="no-lock-icon"
+        matTooltip="Unable to link to a passage"
+        >link_off</mat-icon
+      >
+      <mat-icon
+        *ngIf="inputState == InputState.CORRECT"
+        class="correct-icon"
+        matTooltip="All correct"
+        >check</mat-icon
+      >
+      <mat-icon
+        *ngIf="inputState == InputState.ERRORS"
+        class="errors-icon"
+        matTooltip="Errors detected"
+        >error</mat-icon
+      >
+    </div>
+    <button
+      (click)="toggleVoice()"
+      [ngClass]="{ recording: this.recording }"
+      class="record-button"
+      mat-mini-fab
+      aria-label="Dictate"
+    >
+      <mat-icon>mic</mat-icon>
+    </button>
+  </div>
+</div>
+<ng-template #loading>
+  <div class="page-loader">
+    <mat-spinner></mat-spinner>
+  </div>
+</ng-template>

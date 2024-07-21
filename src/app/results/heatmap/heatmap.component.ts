@@ -140,7 +140,7 @@ export class HeatmapComponent implements OnDestroy {
           for (let wordDiff of verseDiff.v) {
             for (let i = 0; i < wordDiff.v.length; i++) {
               let curIndex =
-                wordDiff.t === DiffType.Added ? wordDiff.i : wordDiff.i + i;
+                wordDiff.t === DiffType.ADDED ? wordDiff.i : wordDiff.i + i;
               let indexTotals = this.heatmap.get(curIndex);
               if (indexTotals === undefined) {
                 indexTotals = [0, 0, 0];

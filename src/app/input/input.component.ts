@@ -215,14 +215,10 @@ export class InputComponent
       }
       e.preventDefault();
       this.submit();
-    } else if (e.code === 'KeyV' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      this.toggleVoice();
     }
   }
 
   toggleVoice() {
-    console.log('toggle voice')
     if (annyang.isListening()) {
       annyang.abort();
     } else {
@@ -239,7 +235,7 @@ export class InputComponent
       for (let chapter of book.v) {
         for (let verse of chapter.v) {
           for (let change of verse.v) {
-            if (change.t === DiffType.Unchanged) {
+            if (change.t === DiffType.UNCHANGED) {
               totalCorrect += change.v.length;
             }
             totalWords += change.v.length;

@@ -17,3 +17,21 @@ button {border: none;
 	align-items: flex-end;
 	height: 30vh;
 }
+
+.input-text.added {
+  background: #e3b2b2;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.input-text.unchanged {
+  // Unchanged text (slight hint of green)
+  color: black;
+}
+
+.input[contenteditable="true"]:empty:before {
+  content: attr(placeholder);
+  color: #aaa;
+  pointer-events: none;
+  display: block; /* For Firefox */
+}

@@ -117,7 +117,7 @@ export class Bible implements IBible {
         }
       }
     }
-    console.log("Anchors:\n", result.sort((a, b) => b[1] - a[1]).slice(0, this.ANCHOR_RETURN_NUMBER));
+    // console.log("Anchors:\n", result.sort((a, b) => b[1] - a[1]).slice(0, this.ANCHOR_RETURN_NUMBER));
     return result.sort((a, b) => b[1] - a[1]).slice(0, this.ANCHOR_RETURN_NUMBER);
   }
 
@@ -206,6 +206,51 @@ export class Bible implements IBible {
     return [...anchorProbabilities.entries()].sort((a, b) => b[1] - a[1]);
   }
 
+  getFlatDiff(
+    attempt: string,
+    startLoc: number,
+    endLoc: number,
+    originalText: boolean = false
+  ){
+    if (startLoc < 0 || endLoc < 0 || startLoc > endLoc) {
+      return undefined;
+    }
+    let scripture = this.getText(startLoc, endLoc);
+    if (!scripture) {
+      console.log('Error getting text');
+      return undefined;
+    }
+    let flatDiff = getWordChange(
+      diffWords(sanitizeText(scripture), sanitizeText(attempt), {
+        ignoreCase: true,
+        ignoreWhitespace: true,
+      })
+    );
+    let scriptureArr = removeUnsanitaryItems(cleanWhitespace(scripture).split(' '));
+    let attemptArr = removeUnsanitaryItems(cleanWhitespace(attempt).split(' '));
+    let scriptureIndex = 0;
+    let attemptIndex = 0;
+    for (let diff of flatDiff){
+      let diffType = diff.t;
+      if (diffType === DiffType.ADDED){
+        diff.v = attemptArr.slice(attemptIndex, attemptIndex + diff.v.length);
+        attemptIndex += diff.v.length;
+      } else if (diffType === DiffType.REMOVED){
+        diff.v = scriptureArr.slice(scriptureIndex, scriptureIndex + diff.v.length);
+        scriptureIndex += diff.v.length;
+      } else {
+        if (originalText){
+          diff.v = attemptArr.slice(attemptIndex, attemptIndex + diff.v.length);
+        } else {
+          diff.v = scriptureArr.slice(scriptureIndex, scriptureIndex + diff.v.length);
+        }
+        attemptIndex += diff.v.length;
+        scriptureIndex += diff.v.length;
+      }
+    }
+    return flatDiff;
+  }
+
   getBibleDiff(
     attempt: string,
     startLoc: number,
@@ -225,6 +270,7 @@ export class Bible implements IBible {
         ignoreWhitespace: true,
       })
     );
+    // console.log(diff)
     let scriptureArr = removeUnsanitaryItems(cleanWhitespace(scripture).split(' '));
     let attemptArr = removeUnsanitaryItems(cleanWhitespace(attempt).split(' '));
     let scriptureIndex = 0;
@@ -275,12 +321,12 @@ export class Bible implements IBible {
                       i: curLoc,
                     });
                   }
-                  if (diffType == DiffType.Added) {
+                  if (diffType == DiffType.ADDED) {
                     verseDiff.v[verseDiff.v.length - 1].v.push(
                       attemptArr[attemptIndex]
                     );
                     attemptIndex += 1;
-                  } else if (diffType == DiffType.Removed) {
+                  } else if (diffType == DiffType.REMOVED) {
                     verseDiff.v[verseDiff.v.length - 1].v.push(
                       scriptureArr[scriptureIndex]
                     );
@@ -313,7 +359,6 @@ export class Bible implements IBible {
         bibleDiff.v.push(bookDiff);
       }
     }
-    console.log('bibleDiff:\n', bibleDiff);
     return bibleDiff;
   }
 

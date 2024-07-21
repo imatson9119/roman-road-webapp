@@ -42,7 +42,6 @@ export class FileUploadComponent {
 
   onFilesDropped(event: any) {
     let files: FileList = event;
-    console.log(files);
     // Remove anything that isn't json
     let nFiles = files.length;
     let validFiles: File[] = [];

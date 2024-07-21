@@ -12,14 +12,14 @@
           {{ verseDiff.m.v }}
         </span>
         <ng-container *ngFor="let vDiff of verseDiff.v; index as i"> 
-          <ng-container *ngIf="vDiff.t === diffTypes.Added && this.type !== displayTypes.scripture">
+          <ng-container *ngIf="vDiff.t === diffTypes.ADDED && this.type !== displayTypes.scripture">
             <span class="added">{{ vDiff.v.join(" ") }}</span><span>&nbsp;</span>
           </ng-container>
-          <ng-container *ngIf="vDiff.t === diffTypes.Removed && this.type !== displayTypes.attempt">
+          <ng-container *ngIf="vDiff.t === diffTypes.REMOVED && this.type !== displayTypes.attempt">
             <!-- <span class="removed">{{ scripture.slice(vDiff.i - diff!.i, vDiff.i + vDiff.v.length - this.diff!.i).join(" ") }}</span><span>&nbsp;</span> -->
             <span class="removed">{{ vDiff.v.join(" ") }}</span><span>&nbsp;</span>
           </ng-container>
-          <ng-container *ngIf="vDiff.t === diffTypes.Unchanged">
+          <ng-container *ngIf="vDiff.t === diffTypes.UNCHANGED">
             <span>{{ vDiff.v.join(" ") }}</span><span>&nbsp;</span>
           </ng-container>
         </ng-container>

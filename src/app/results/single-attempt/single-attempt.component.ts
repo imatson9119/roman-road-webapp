@@ -57,7 +57,6 @@ export class SingleAttemptComponent implements OnInit, OnDestroy {
 
   setResult(id: string): void {
     if(!this.result_bank.results.has(id)){
-      console.log(`Result with id ${id} not found.`)
       this._router.navigateByUrl('/history');
       return;
     }
@@ -67,11 +66,11 @@ export class SingleAttemptComponent implements OnInit, OnDestroy {
   }
 
   isScripture(diff: VerseChange): boolean {
-    return diff.t === DiffType.Unchanged || diff.t === DiffType.Removed;
+    return diff.t === DiffType.UNCHANGED || diff.t === DiffType.REMOVED;
   }
 
   isAttempt(diff: VerseChange): boolean {
-    return diff.t === DiffType.Unchanged || diff.t === DiffType.Added;
+    return diff.t === DiffType.UNCHANGED || diff.t === DiffType.ADDED;
   }
 
   deleteResult(): void {
@@ -106,7 +105,7 @@ export class SingleAttemptComponent implements OnInit, OnDestroy {
       for(let chapterDiff of bookDiff.v){
         for(let verseDiff of chapterDiff.v){
           for(let change of verseDiff.v){
-            if (change.t === DiffType.Added || change.t === DiffType.Removed){
+            if (change.t === DiffType.ADDED || change.t === DiffType.REMOVED){
               this.longestSequence = Math.max(this.longestSequence, currentSequence);
               currentSequence = 0;
               this.totalMistakes += change.v.length;

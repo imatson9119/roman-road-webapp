@@ -114,9 +114,9 @@ export interface VerseChange {
 }
 
 export enum DiffType {
-  Added = 0,
-  Removed = 1,
-  Unchanged = 2
+  ADDED,
+  REMOVED,
+  UNCHANGED
 }
 
 export interface BibleWord {

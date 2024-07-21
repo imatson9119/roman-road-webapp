@@ -1,0 +1,122 @@
+h2 {
+  font-size: 1.8rem;
+  font-weight: 100;
+  margin-top: 2rem;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  // margin-bottom: 300px;
+}
+
+.input {
+  box-sizing: border-box;
+  background-color: white;
+  border-radius: 5px 5px 0 0;
+  width: 100%;
+  padding: 1rem;
+  border-bottom: 1px solid #aaaaaa;
+  outline: none;
+  transition: background-color 0.3s;
+  margin-bottom: 1px;
+  white-space: pre-wrap;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 1rem;
+  color: #777
+}
+
+.input:focus {
+  border-bottom: 2px solid #536a75;
+  background-color: #eeeeee;
+  margin-bottom: 0px;
+}
+
+.passage {
+  display: flex;
+  align-items: center;
+  height: 2rem;
+  gap: .5rem;
+}
+
+.passage-label {
+  color: #000;
+  font-size: .9rem;
+  font-weight: 100;
+}
+
+.no-lock-icon {
+  color: #888888; 
+}
+
+.correct-icon {
+  color: #869c66;
+}
+
+.errors-icon {
+  color: #b79a49;
+}
+
+.mat-mdc-fab.mat-primary {
+  --mdc-fab-container-color: #4a555b;
+  --mat-fab-foreground-color: white;
+  --mat-fab-state-layer-color: white;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-top: 1rem;
+}
+
+.mat-mdc-unelevated-button {
+  transition: background-color 0.3s;
+}
+
+.off.mat-mdc-unelevated-button:not(:disabled) {
+  background-color: #555555;
+}
+
+.off.mat-mdc-unelevated-button:not(:disabled) {
+  background-color: #555555;
+}
+
+.on.mat-mdc-unelevated-button:not(:disabled) {
+  background-color: #848b60;
+}
+
+.button-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: .5rem;
+
+  .record-button.mat-mdc-mini-fab.mat-accent {
+    --mdc-fab-small-container-color: #555555;
+    color: white;
+  }
+  .record-button.mat-mdc-mini-fab.mat-accent.recording {
+    --mdc-fab-small-container-color: #b79a49;
+  }
+}
+
+.input-height-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+.measure-element {
+  height: auto;
+  overflow: hidden;
+}

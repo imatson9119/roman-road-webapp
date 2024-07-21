@@ -5,7 +5,6 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { InputComponent } from './input/input.component';
 import { StorageService } from './services/storage.service';
-import { NavbarComponent } from './navbar/navbar.component';
 import { FormsModule } from '@angular/forms';
 import { SingleAttemptComponent } from './results/single-attempt/single-attempt.component';
 import { HeatmapComponent } from './results/heatmap/heatmap.component';
@@ -46,12 +45,12 @@ import { GoalComponent } from './goal/goal.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { DonatePopupComponent } from './info/donate-popup/donate-popup.component';
+import { PracticeComponent } from './practice/practice.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     InputComponent,
-    NavbarComponent,
     SingleAttemptComponent,
     HeatmapComponent,
     PassageSelectDialogComponent,
@@ -68,7 +67,8 @@ import { DonatePopupComponent } from './info/donate-popup/donate-popup.component
     HomeComponent,
     DeleteGoalDialogComponent,
     GoalComponent,
-    DonatePopupComponent
+    DonatePopupComponent,
+    PracticeComponent
   ],
   imports: [
     BrowserModule,

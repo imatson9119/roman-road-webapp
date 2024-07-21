@@ -40,7 +40,7 @@ export class BibleDisplayComponent {
     if(!record){
       return 'transparent';
     }
-    let score = (record[DiffType.Added] + record[DiffType.Removed]) / record.reduce((acc, cv) => acc + cv, 0);
+    let score = (record[DiffType.ADDED] + record[DiffType.REMOVED]) / record.reduce((acc, cv) => acc + cv, 0);
     return numberToColorHsl(score);
   }
 
