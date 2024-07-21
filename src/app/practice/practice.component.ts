@@ -108,7 +108,9 @@ export class PracticeComponent
   }
 
   onChange() {
+    this.inputState = InputState.WAITING;
     // Clear existing timeout to reset the timer on new key press
+    this.attempt = this.input!.nativeElement.innerText;
     if (this.keyPressTimeout) {
       clearTimeout(this.keyPressTimeout);
     }

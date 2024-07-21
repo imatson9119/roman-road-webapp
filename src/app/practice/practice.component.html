@@ -27,7 +27,7 @@
     class="input"
     placeholder="In the beginning, God..."
     (keyup)="this.onKeyDown($event)"
-    (change)="this.onChange()"
+    (input)="this.onChange()"
     (click)="this.annyang.abort()"
     (paste)="this.handlePaste($event)"
     contenteditable="true"
