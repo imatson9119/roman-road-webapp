@@ -98,22 +98,23 @@ export class PracticeComponent
 
   onKeyDown(e: KeyboardEvent) {
     this.attempt = this.input!.nativeElement.innerText;
-    this.inputState = InputState.WAITING;
 
+
+    // Check if the pressed key is a space
+    if (e.key === ' ') {
+      this.inputState = InputState.WAITING;
+      this.processDiff();
+    }
+  }
+
+  onChange() {
     // Clear existing timeout to reset the timer on new key press
     if (this.keyPressTimeout) {
       clearTimeout(this.keyPressTimeout);
     }
-
-    // Check if the pressed key is a space
-    if (e.key === ' ') {
+    this.keyPressTimeout = setTimeout(() => {
       this.processDiff();
-    } else {
-      // Set a new timeout if the key is not a space
-      this.keyPressTimeout = setTimeout(() => {
-        this.processDiff();
-      }, 3000); // 3000 milliseconds = 3 seconds
-    }
+    }, 3000); // 3000 milliseconds = 3 seconds
   }
 
   toggleVoice() {
