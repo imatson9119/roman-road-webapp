@@ -1,5 +1,13 @@
 <div class="container" *ngIf="this.bible else loading">
   <h2>Recitation Heatmap</h2>
+  <div class="subtitle">
+    <p>
+      View a heatmap of recitation attempts for a specific passage. The heatmap
+      will show the most frequently missed areas of the passage, allowing you 
+      to target your practice.
+    </p>
+  </div>
+  <br>
   <div class="toolbar">
     <div class="left">
       <app-verse-selector

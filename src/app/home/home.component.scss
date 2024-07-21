@@ -200,6 +200,18 @@ td {
   font-size: 0.9rem;
 }
 
+.no-goals {
+  margin-top: 5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #666;
+  font-weight: 100;
+  font-size: .9rem;
+  text-align: center;
+  line-height: 1.3rem;
+}
+
 @media screen and (max-width: 600px) {
   .mdc-data-table__cell,
   .mdc-data-table__header-cell {

@@ -1,5 +1,12 @@
 <div class="input-container" *ngIf="this.bible; else loading">
   <h2>Practice Recitation</h2>
+  <div class="subtitle">
+    <p>
+      Here you can practice reciting scripture with error detection along
+      the way. Just start typing and we'll automatically determine the passage
+      you're working on.
+    </p>
+  </div>
   <div class="toolbar">
     <button
       [disabled]="!this.passage || this.inputState != InputState.ERRORS"

@@ -44,7 +44,7 @@
       </button>
     </div>
     <div class="hr"></div>
-    <div *ngIf="this.goals.length !== 0 && this.bible" class="goals-container">
+    <div *ngIf="this.goals.length !== 0 && this.bible;else noGoals" class="goals-container">
       <mat-form-field class="full-width">
         <mat-label>Filter</mat-label>
         <input
@@ -124,6 +124,9 @@
       >
       </mat-paginator>
     </div>
+    <ng-template #noGoals>
+      <div class="no-goals">Create a goal to track your progress over a passage.<br>Click the "+" button to add a goal.</div>
+    </ng-template>
   </div>
 </div>
 <ng-template #loading>
