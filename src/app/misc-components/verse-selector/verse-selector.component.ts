@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Verse, Chapter, Book, BiblePointer } from '../classes/models';
+import { BiblePointer } from '../../classes/models';
 import { VerseSelectorPopupComponent } from './verse-selector-popup/verse-selector-popup.component';
-import { Bible } from '../classes/Bible';
+import { Bible } from '../../classes/Bible';
 
 @Component({
   selector: 'app-verse-selector',

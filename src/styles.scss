@@ -28,10 +28,3 @@ button {border: none;
   // Unchanged text (slight hint of green)
   color: black;
 }
-
-.input[contenteditable="true"]:empty:before {
-  content: attr(placeholder);
-  color: #aaa;
-  pointer-events: none;
-  display: block; /* For Firefox */
-}

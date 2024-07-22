@@ -12,7 +12,7 @@ import { StorageService } from '../services/storage.service';
 import { Router } from '@angular/router';
 import { BibleService } from '../services/bible.service';
 import { MatDialog } from '@angular/material/dialog';
-import { PassageSelectDialogComponent } from '../passage-select-dialog.component/passage-select-dialog.component';
+import { PassageSelectDialogComponent } from '../misc-components/passage-select-dialog/passage-select-dialog.component';
 import { BiblePassage } from '../classes/BiblePassage';
 import { getAttemptText, intersection, sanitizeText } from '../utils/utils';
 import { BibleDiff, BiblePointer, DiffType } from '../classes/models';

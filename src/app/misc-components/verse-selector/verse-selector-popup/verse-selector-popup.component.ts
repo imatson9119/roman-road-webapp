@@ -1,8 +1,7 @@
-import { Component, Inject, Input, OnDestroy } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Book } from 'src/app/classes/models';
-import { BibleService } from 'src/app/services/bible.service';
-import { abbreviateBookName } from '../../utils/utils';
+import { abbreviateBookName } from '../../../utils/utils';
 import { Bible } from 'src/app/classes/Bible';
 import { Subscription } from 'rxjs';
 

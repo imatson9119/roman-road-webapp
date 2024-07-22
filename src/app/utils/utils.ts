@@ -298,7 +298,7 @@ export function getTextNodeAtPosition(root: any, index: any){
   var c = treeWalker.nextNode();
   return {
       node: c? c: root,
-      position: index
+      position: c? Math.min(index,c!.textContent!.length) : Math.min(index,root.textContent!.length)
   };
 }
 

@@ -1,9 +1,15 @@
 import {
+  ApplicationRef,
   Component,
   ElementRef,
+  EnvironmentInjector,
   NgZone,
   OnDestroy,
+  Renderer2,
   ViewChild,
+  ViewRef,
+  ViewContainerRef,
+  createComponent,
 } from '@angular/core';
 // https://github.com/kpdecker/jsdiff
 import { BibleService } from '../services/bible.service';
@@ -12,6 +18,7 @@ import { normalizeString, sanitizeText, saveCaretPosition } from '../utils/utils
 import { DiffType, WordChange } from '../classes/models';
 import { Bible } from '../classes/Bible';
 import { Subscription } from 'rxjs';
+import { DynamicSpanComponent } from './dynamic-span/dynamic-span.component';
 
 declare const annyang: any;
 
@@ -44,10 +51,14 @@ export class PracticeComponent
   inputState = InputState.NO_LOCK;
 
   @ViewChild('input') input: ElementRef | null = null;
-  @ViewChild('inputParent') inputParent: ElementRef | null = null;
+  @ViewChild('input', { read: ViewContainerRef }) inputContainerRef: ViewContainerRef | null = null;
+
 
   constructor(
     private _bibleService: BibleService,
+    private renderer: Renderer2,
+    private injector: EnvironmentInjector,
+    private appRef: ApplicationRef,
     private ngZone: NgZone
   ) {
     this.subscriptions.push(
@@ -98,7 +109,6 @@ export class PracticeComponent
 
   onKeyDown(e: KeyboardEvent) {
     this.attempt = this.input!.nativeElement.innerText;
-
 
     // Check if the pressed key is a space
     if (e.key === ' ') {
@@ -160,11 +170,11 @@ export class PracticeComponent
     create a span element with the appropriate class, and append it to the input element.
     */
     // Save selection position to restore after updating the UI
-    let restorePosition = saveCaretPosition(this.input!.nativeElement);
+    const restorePosition = saveCaretPosition(this.input!.nativeElement);
+    this.input!.nativeElement.innerHTML = '';
 
-    let [normalizedAttempt, normalizedAttemptMapping] = normalizeString(this.attempt);
+    const [normalizedAttempt, normalizedAttemptMapping] = normalizeString(this.attempt);
 
-    let fragment = document.createDocumentFragment();
     let curIndex = 0; // Index in the normalized attempt
     let originalAttemptEnd = -1;
     
@@ -174,43 +184,44 @@ export class PracticeComponent
       // Normalize the diff
       let [normalizedDiff, normalizedDiffMapping] = normalizeString(change.v.join(''));
       // Find the corresponding substring in the normalized attempt
-      if (change.t == 1) {
+      if (change.t == DiffType.REMOVED) {
         continue;
       }
-
       let originalAttemptStart = normalizedAttemptMapping[curIndex];
       originalAttemptEnd = curIndex + normalizedDiff.length < normalizedAttemptMapping.length 
         ? normalizedAttemptMapping[curIndex + normalizedDiff.length ]
         : normalizedAttemptMapping[normalizedAttempt.length - 1] + 1;
       curIndex += normalizedDiff.length;
-      // console.log(curIndex + normalizedDiff.length < normalizedAttemptMapping.length, "?", normalizedAttemptMapping[curIndex + normalizedDiff.length], normalizedAttemptMapping[normalizedAttempt.length -1 ] + 1);
-      // console.log(originalAttemptStart, originalAttemptEnd, normalizedDiff, change.v.join(''));
-      let span = document.createElement('span');
-      span.textContent = this.attempt.substring(originalAttemptStart, originalAttemptEnd );
-      span.classList.add(className);
-      span.classList.add('input-text')
-      if (change.t == 0 && i != 0 && diff[i-1].t == 1){
-        span.setAttributeNS(null, 'matTooltip', diff[i-1].v.join(' '));
+      const text = this.attempt.substring(originalAttemptStart, originalAttemptEnd);
+      let tooltip = '';
+      if (change.t == DiffType.ADDED && i != 0 && diff[i-1].t == DiffType.REMOVED) {
+        tooltip =  diff[i-1].v.join(' ');
+        className = 'changed'
       }
-      fragment.appendChild(span);
-      // console.log("Original attempt end", originalAttemptEnd);
+      if (i != diff.length - 1 && diff[i+1].t == DiffType.REMOVED && (i == diff.length - 2 || diff[i+2].t != DiffType.ADDED)) {
+        // Now we need to split into two spans, one with the unchanged text, then link the removed text
+        // to the whitespace between the two spans. We can do this using regex matching backwards to 
+        // find the whitespace.
+        let match = text.match(/\s+$/);
+        if (match) {
+          let whitespace = match[0];
+          console.log(whitespace);
+          let whitespaceIndex = text.length - whitespace.length;
+          let unchangedText = text.substring(0, whitespaceIndex);
+          let removedText = text.substring(whitespaceIndex);
+          this.addSpanToInput(unchangedText, className, tooltip);
+          this.addSpanToInput(removedText, 'removed', diff[i+1].v.join(' '));
+        }
+        continue;
+      }
+      this.addSpanToInput(text, className, tooltip);
     }
     // Append the remaining text
-    // console.log("Original attempt end", originalAttemptEnd);
     if (originalAttemptEnd < this.attempt.length) {
-      // console.log(originalAttemptEnd)
-      // console.log("Appending remaining text", this.attempt.substring(originalAttemptEnd));
-      let span = document.createElement('span');
-      span.textContent = this.attempt.substring(originalAttemptEnd);
-      fragment.appendChild(span);
+      this.addSpanToInput(this.attempt.substring(originalAttemptEnd));
     }
 
-    // Clear the input element and append the fragment
-    this.input!.nativeElement.innerHTML = '';
-    this.input!.nativeElement.appendChild(fragment);
-
     restorePosition();
-
   }
   
   handlePaste(e: ClipboardEvent) {
@@ -261,7 +272,18 @@ export class PracticeComponent
 
   addToAttempt(text: string) {
     this.attempt += text;
-    this.input!.nativeElement.appendChild(document.createTextNode(text));
+    this.addSpanToInput(text);
     this.processDiff()
   }
-}
+
+  addSpanToInput(text: string, className: string = '', tooltip: string = '') {
+    const componentRef = this.inputContainerRef!.createComponent(DynamicSpanComponent);
+    componentRef.setInput("displayText", text);
+    componentRef.setInput("tooltipText", tooltip);
+    componentRef.setInput("class", className)
+    componentRef.changeDetectorRef.detectChanges();
+    const elementRef = componentRef.location.nativeElement;
+    this.input?.nativeElement.appendChild(elementRef);
+    console.log(this.input?.nativeElement.innerText)
+  }
+} 

@@ -126,3 +126,20 @@ h2 {
   font-weight: 100;
   font-size: .9rem;
 }
+
+.input[contenteditable="true"]:empty:before {
+  content: attr(placeholder);
+  color: #aaa;
+  pointer-events: none;
+  display: block; /* For Firefox */
+}
+
+.added {
+  background: #e3b2b2;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.unchanged {
+  // Unchanged text (slight hint of green)
+  color: black;
+}

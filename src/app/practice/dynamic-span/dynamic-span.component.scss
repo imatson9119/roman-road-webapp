@@ -1,0 +1,22 @@
+.added {
+  background: #e3b2b2;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.changed { 
+  background: #e3d5b2;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone; 
+}
+
+.unchanged {
+  // Unchanged text (slight hint of green)
+  color: black;
+}
+
+.removed {
+  background: #88ce84;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}

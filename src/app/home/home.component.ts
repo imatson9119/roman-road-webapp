@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DeleteGoalDialogComponent } from '../goal/delete-goal-dialog/delete-goal-dialog.component';
 import { Bible } from '../classes/Bible';
 import { Subscription } from 'rxjs';
-import { PassageSelectDialogComponent } from '../passage-select-dialog.component/passage-select-dialog.component';
+import { PassageSelectDialogComponent } from '../misc-components/passage-select-dialog/passage-select-dialog.component';
 import { Router } from '@angular/router';
 import { BiblePassage } from '../classes/BiblePassage';
 import { MatTableDataSource } from '@angular/material/table';

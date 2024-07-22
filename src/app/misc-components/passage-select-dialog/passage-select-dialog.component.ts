@@ -1,9 +1,9 @@
 import { Component, Inject, OnDestroy, ViewChild } from '@angular/core';
-import { BibleService } from '../services/bible.service';
+import { BibleService } from '../../services/bible.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { BiblePassage } from '../classes/BiblePassage';
+import { BiblePassage } from '../../classes/BiblePassage';
 import { abbreviateBookName } from 'src/app/utils/utils';
-import { VerseSelectorComponent } from 'src/app/verse-selector/verse-selector.component';
+import { VerseSelectorComponent } from '../verse-selector/verse-selector.component';
 import { Bible } from 'src/app/classes/Bible';
 import { Subscription } from 'rxjs';
 import { BiblePointer } from 'src/app/classes/models';
