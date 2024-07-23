@@ -7,9 +7,7 @@ import {
   OnDestroy,
   Renderer2,
   ViewChild,
-  ViewRef,
   ViewContainerRef,
-  createComponent,
 } from '@angular/core';
 // https://github.com/kpdecker/jsdiff
 import { BibleService } from '../services/bible.service';
@@ -29,6 +27,21 @@ enum InputState {
   NO_LOCK,
   CORRECT,
   ERRORS
+}
+
+enum SpanClass {
+  ADDED = 'added',
+  REMOVED = 'removed',
+  UNCHANGED = 'unchanged',
+  CHANGED = 'changed'
+}
+
+class DynamicSpan {
+  startIndex: number = -1;
+  endIndex: number = -1;
+  displayText: string = '';
+  tooltipText: string = '';
+  class: string = '';
 }
 
 @Component({
@@ -107,26 +120,19 @@ export class PracticeComponent
     );
   }
 
-  onKeyDown(e: KeyboardEvent) {
-    this.attempt = this.input!.nativeElement.innerText;
-
-    // Check if the pressed key is a space
-    if (e.key === ' ') {
-      this.inputState = InputState.WAITING;
-      this.processDiff();
-    }
-  }
-
-  onChange() {
-    this.inputState = InputState.WAITING;
-    // Clear existing timeout to reset the timer on new key press
+  onChange(e: any) {
     this.attempt = this.input!.nativeElement.innerText;
     if (this.keyPressTimeout) {
       clearTimeout(this.keyPressTimeout);
     }
-    this.keyPressTimeout = setTimeout(() => {
+    this.inputState = InputState.WAITING;
+    if (e.data === ' ') {
       this.processDiff();
-    }, 3000); // 3000 milliseconds = 3 seconds
+    } else {
+      this.keyPressTimeout = setTimeout(() => {
+        this.processDiff();
+      }, 3000); // 3000 milliseconds = 3 seconds
+    }
   }
 
   toggleVoice() {
@@ -139,6 +145,10 @@ export class PracticeComponent
   
   // Need an async routine to get the Bible diff and update the UI with the results
   async processDiff() {
+    if (this.keyPressTimeout) {
+      clearTimeout(this.keyPressTimeout);
+    }
+
     if (!this.bible) {
       this.inputState = InputState.NONE;
       return;
@@ -172,56 +182,117 @@ export class PracticeComponent
     // Save selection position to restore after updating the UI
     const restorePosition = saveCaretPosition(this.input!.nativeElement);
     this.input!.nativeElement.innerHTML = '';
-
-    const [normalizedAttempt, normalizedAttemptMapping] = normalizeString(this.attempt);
-
-    let curIndex = 0; // Index in the normalized attempt
-    let originalAttemptEnd = -1;
-    
-    for (let i = 0; i < diff.length; i++) {
-      const change = diff[i];
-      let className = change.t == 0 ? "added" : change.t == 1 ? "removed" : "unchanged";
-      // Normalize the diff
-      let [normalizedDiff, normalizedDiffMapping] = normalizeString(change.v.join(''));
-      // Find the corresponding substring in the normalized attempt
-      if (change.t == DiffType.REMOVED) {
-        continue;
-      }
-      let originalAttemptStart = normalizedAttemptMapping[curIndex];
-      originalAttemptEnd = curIndex + normalizedDiff.length < normalizedAttemptMapping.length 
-        ? normalizedAttemptMapping[curIndex + normalizedDiff.length ]
-        : normalizedAttemptMapping[normalizedAttempt.length - 1] + 1;
-      curIndex += normalizedDiff.length;
-      const text = this.attempt.substring(originalAttemptStart, originalAttemptEnd);
-      let tooltip = '';
-      if (change.t == DiffType.ADDED && i != 0 && diff[i-1].t == DiffType.REMOVED) {
-        tooltip =  diff[i-1].v.join(' ');
-        className = 'changed'
-      }
-      if (i != diff.length - 1 && diff[i+1].t == DiffType.REMOVED && (i == diff.length - 2 || diff[i+2].t != DiffType.ADDED)) {
-        // Now we need to split into two spans, one with the unchanged text, then link the removed text
-        // to the whitespace between the two spans. We can do this using regex matching backwards to 
-        // find the whitespace.
-        let match = text.match(/\s+$/);
-        if (match) {
-          let whitespace = match[0];
-          console.log(whitespace);
-          let whitespaceIndex = text.length - whitespace.length;
-          let unchangedText = text.substring(0, whitespaceIndex);
-          let removedText = text.substring(whitespaceIndex);
-          this.addSpanToInput(unchangedText, className, tooltip);
-          this.addSpanToInput(removedText, 'removed', diff[i+1].v.join(' '));
-        }
-        continue;
-      }
-      this.addSpanToInput(text, className, tooltip);
+    let spans = this.getSpans(diff, this.attempt);
+    for (let span of spans) {
+      this.addSpanToInput(span.displayText, span.class, span.tooltipText);
     }
-    // Append the remaining text
-    if (originalAttemptEnd < this.attempt.length) {
-      this.addSpanToInput(this.attempt.substring(originalAttemptEnd));
-    }
+    this.addSpanToInput('','');
 
     restorePosition();
+  }
+
+  getSpans(diff: WordChange[], attempt: string) {
+    /* Converts the diff into a list of spans to display in the input element 
+       This is done by building a list of spans, combining diffs when possible.
+       For example, added and removed will be combined into a single span, and consecutive
+       changed or added spans will be combined into a single span when possible. */
+    const [normalizedText, normalizedTextMapping] = normalizeString(attempt);
+    console.log(diff);
+    let spans: DynamicSpan[] = [];
+    let curSpan: DynamicSpan | null = null;
+    let curIndex = 0;
+    let originalStart = 0;
+    let originalEnd = 0;
+    for (let i = 0; i < diff.length; i++) {
+      const change = diff[i];
+      const [normalizedDiff, normalizedDiffMapping] = normalizeString(change.v.join(''));
+      originalStart = normalizedTextMapping[curIndex];
+      originalEnd = normalizedTextMapping[curIndex];
+      let text = '';
+      if (change.t != DiffType.REMOVED) {
+        originalStart = normalizedTextMapping[curIndex];
+        originalEnd = curIndex + normalizedDiff.length < normalizedTextMapping.length 
+          ? normalizedTextMapping[curIndex + normalizedDiff.length ]
+          : normalizedTextMapping[normalizedText.length - 1] + 1;
+        curIndex += normalizedDiff.length;
+        text = attempt.substring(originalStart, originalEnd);
+      }
+
+      switch (change.t) {
+        case DiffType.ADDED:
+          if (!curSpan || curSpan.class === SpanClass.UNCHANGED) {
+            curSpan = new DynamicSpan();
+            curSpan.startIndex = originalStart;
+            curSpan.endIndex = originalEnd;
+            curSpan.displayText = text;
+            curSpan.tooltipText = '';
+            curSpan.class = SpanClass.ADDED;
+          } else {
+            curSpan.endIndex = originalEnd;
+            curSpan.displayText += text;
+            if (curSpan.class === SpanClass.REMOVED) {
+              curSpan.class = SpanClass.CHANGED;
+            }
+          }
+          break;
+        case DiffType.REMOVED:
+          if (!curSpan || curSpan.class === SpanClass.UNCHANGED) {
+            curSpan = new DynamicSpan();
+            curSpan.startIndex = originalStart;
+            curSpan.endIndex = originalEnd;
+            curSpan.displayText = text;
+            curSpan.tooltipText = change.v.join(' ');
+            curSpan.class = SpanClass.REMOVED;
+          } else {
+            curSpan.endIndex = originalEnd;
+            curSpan.displayText += text;
+            curSpan.tooltipText += " " + change.v.join(' ');
+            if (curSpan.class === SpanClass.ADDED) {
+              curSpan.class = SpanClass.CHANGED;
+            }
+          }
+          break;
+        case DiffType.UNCHANGED:
+          if (curSpan) {
+            if (curSpan.class === SpanClass.REMOVED && spans.length > 0) {
+              // We need to adjust the span to include the whitespace ending the previous span
+              const prevSpan = spans[spans.length - 1];
+              const match = prevSpan.displayText.match(/\s+$/);
+              if (match) {
+                const whitespace = match[0];
+                const whitespaceIndex = prevSpan.displayText.length - whitespace.length;
+                curSpan.displayText = prevSpan.displayText.substring(whitespaceIndex);
+                curSpan.startIndex -= whitespace.length;
+                prevSpan.displayText = prevSpan.displayText.substring(0, whitespaceIndex);
+                prevSpan.endIndex -= whitespace.length;
+              }
+            }
+            spans.push(curSpan);
+            curSpan = null;
+          }
+          spans.push({
+            startIndex: originalStart,
+            endIndex: originalEnd,
+            displayText: text,
+            tooltipText: '',
+            class: SpanClass.UNCHANGED
+          });
+          break;
+      }
+    }
+    if (curSpan) {
+      spans.push(curSpan);
+    }
+    if (originalEnd < attempt.length) {
+      spans.push({
+        startIndex: originalEnd,
+        endIndex: attempt.length,
+        displayText: attempt.substring(originalEnd),
+        tooltipText: '',
+        class: SpanClass.UNCHANGED
+      });
+    }
+    return spans;
   }
   
   handlePaste(e: ClipboardEvent) {
@@ -284,6 +355,5 @@ export class PracticeComponent
     componentRef.changeDetectorRef.detectChanges();
     const elementRef = componentRef.location.nativeElement;
     this.input?.nativeElement.appendChild(elementRef);
-    console.log(this.input?.nativeElement.innerText)
   }
 } 

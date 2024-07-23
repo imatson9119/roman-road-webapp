@@ -33,8 +33,7 @@
     #input
     class="input"
     placeholder="In the beginning, God..."
-    (keyup)="this.onKeyDown($event)"
-    (input)="this.onChange()"
+    (input)="this.onChange($event)"
     (click)="this.annyang.abort()"
     (paste)="this.handlePaste($event)"
     contenteditable="true"
