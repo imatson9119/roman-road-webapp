@@ -41,7 +41,7 @@
   <div class="button-container">
     <div class="passage">
       <div class="passage-label">
-        {{ this.passage ? this.passage.toString() : "No passage linked" }}
+        {{ this.inputState !== this.InputState.NO_LOCK && this.passage ? this.passage.toString() : "No passage linked" }}
       </div>
       <mat-spinner
         *ngIf="inputState == InputState.WAITING"

@@ -62,6 +62,7 @@ export class PracticeComponent
   keyPressTimeout: any;
   InputState = InputState
   inputState = InputState.NO_LOCK;
+  nPossibilePassages = 0;
 
   @ViewChild('input') input: ElementRef | null = null;
   @ViewChild('input', { read: ViewContainerRef }) inputContainerRef: ViewContainerRef | null = null;
@@ -69,9 +70,6 @@ export class PracticeComponent
 
   constructor(
     private _bibleService: BibleService,
-    private renderer: Renderer2,
-    private injector: EnvironmentInjector,
-    private appRef: ApplicationRef,
     private ngZone: NgZone
   ) {
     this.subscriptions.push(
@@ -154,8 +152,9 @@ export class PracticeComponent
       return;
     }
 
-    let anchors = this.bible.anchorText(this.attempt);
+    let anchors = this.bible.anchorText(this.attempt, 1, 2);
     if(!this.canAutoLock(anchors, this.attempt)) {
+      this.nPossibilePassages = anchors.length;
       this.inputState = InputState.NO_LOCK;
       return;
     }

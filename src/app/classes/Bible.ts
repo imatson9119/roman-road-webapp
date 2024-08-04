@@ -10,10 +10,10 @@ export class Bible implements IBible {
   v: Book[];
   wordMap: WordMap;
 
-  ANCHOR_MAX_CERTAIN_LOCKS = 1;
-  ANCHOR_SIGNIFICANCE_THRESHOLD = 20;
-  ANCHOR_RETURN_NUMBER = 5;
-  MAX_LENGTH_DIFF_FACTOR = 4;
+  DEFAULT_ANCHOR_MAX_CERTAIN_LOCKS = 1; // The maximum number of certain locks before stopping the anchor search
+  ANCHOR_SIGNIFICANCE_THRESHOLD = 100; // The maximum number of possible anchors to consider before the sequence is considered insignificant
+  DEFAULT_ANCHOR_RETURN_NUMBER = 5; // The number of anchors to return
+  MAX_LENGTH_DIFF_FACTOR = 4; // The maximum factor by which the length of the passage can differ from the length of the attempt
 
   constructor(bible: IBible, wordMap: WordMap) {
     this.m = bible.m;
@@ -91,22 +91,22 @@ export class Bible implements IBible {
     return text.trim();
   }
 
-  anchorText(text: string): [BiblePassage, number][] {
+  anchorText(text: string, nAnchors: number = this.DEFAULT_ANCHOR_RETURN_NUMBER, maxCertainLocks: number = this.DEFAULT_ANCHOR_MAX_CERTAIN_LOCKS): [BiblePassage, number][] {
     let words =  text.trim().replace(/[^\w ]/g, "").toLowerCase().split(/\s+/);
-    let startAnchors = this._getBibleAnchors(words, AnchorType.START);
+    let startAnchors = this._getBibleAnchors(words, AnchorType.START, maxCertainLocks);
     let result: [BiblePassage, number][] = []
     if (startAnchors.length === 0) {
       return result;
     }
-    let endAnchors = this._getBibleAnchors(words, AnchorType.END);
+    let endAnchors = this._getBibleAnchors(words, AnchorType.END, maxCertainLocks);
     if (endAnchors.length === 0) {
       return result;
     }
 
-    return this._getPassagesFromAnchors(startAnchors, endAnchors, words);
+    return this._getPassagesFromAnchors(startAnchors, endAnchors, words, nAnchors);
   }
 
-  _getPassagesFromAnchors(startAnchors: [number, number][], endAnchors: [number, number][], words: string[]): [BiblePassage, number][] {
+  _getPassagesFromAnchors(startAnchors: [number, number][], endAnchors: [number, number][], words: string[], nAnchors: number): [BiblePassage, number][] {
     let result: [BiblePassage, number][] = [];
     for (let startAnchor of startAnchors) {
       for (let endAnchor of endAnchors) {
@@ -118,14 +118,14 @@ export class Bible implements IBible {
       }
     }
     // console.log("Anchors:\n", result.sort((a, b) => b[1] - a[1]).slice(0, this.ANCHOR_RETURN_NUMBER));
-    return result.sort((a, b) => b[1] - a[1]).slice(0, this.ANCHOR_RETURN_NUMBER);
+    return result.sort((a, b) => b[1] - a[1]).slice(0, nAnchors);
   }
 
   _isValidPassage(start: number, end: number, attemptLength: number): boolean {
     return start <= end && end - start <= attemptLength * this.MAX_LENGTH_DIFF_FACTOR;
   }
 
-  _getBibleAnchors(words: string[], type: AnchorType): [number, number][]{
+  _getBibleAnchors(words: string[], type: AnchorType, maxCertainLocks: number): [number, number][]{
     /**
      * This function calculates likely starting or ending locations in the Bible for a given sequence of words.
      * An anchor sequence is a sequence that is used to locate a starting index in the Bible.
@@ -147,7 +147,7 @@ export class Bible implements IBible {
         anchorProbabilities.push(this._getBibleAnchorProbabilities(words, type, i));
         if (anchorProbabilities[anchorProbabilities.length - 1].length !== 0 && anchorProbabilities[anchorProbabilities.length - 1][0][1] === 1) {
           nCertainLocks++;
-          if (nCertainLocks === this.ANCHOR_MAX_CERTAIN_LOCKS) {
+          if (nCertainLocks === maxCertainLocks) {
             break;
           }
         }
