@@ -1,11 +1,9 @@
 import {
-  ApplicationRef,
+  AfterViewInit,
   Component,
   ElementRef,
-  EnvironmentInjector,
   NgZone,
   OnDestroy,
-  Renderer2,
   ViewChild,
   ViewContainerRef,
 } from '@angular/core';
@@ -50,7 +48,7 @@ class DynamicSpan {
   styleUrls: ['./practice.component.scss'],
 })
 export class PracticeComponent
-  implements OnDestroy
+  implements OnDestroy 
 {
   attempt = '';
   annyang = annyang;
@@ -63,6 +61,8 @@ export class PracticeComponent
   InputState = InputState
   inputState = InputState.NO_LOCK;
   nPossibilePassages = 0;
+  STORAGE_KEY = 'practice-text';
+  
 
   @ViewChild('input') input: ElementRef | null = null;
   @ViewChild('input', { read: ViewContainerRef }) inputContainerRef: ViewContainerRef | null = null;
@@ -72,11 +72,6 @@ export class PracticeComponent
     private _bibleService: BibleService,
     private ngZone: NgZone
   ) {
-    this.subscriptions.push(
-      this._bibleService.curBible.subscribe((bible) => {
-        this.bible = bible;
-      })
-    );
     annyang.addCallback('result', (userSaid: string[] | undefined) => {
       if (userSaid && userSaid.length > 0) {
         ngZone.run(() => {
@@ -101,7 +96,17 @@ export class PracticeComponent
         this.recording = true;
       });
     });
+    
+    this.subscriptions.push(
+      this._bibleService.curBible.subscribe((bible) => {
+        this.bible = bible;
+        this.processDiff();
+      })
+    );
+    this.loadFromLocalStorage();
   }
+
+
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((sub) => sub.unsubscribe());
@@ -120,6 +125,7 @@ export class PracticeComponent
 
   onChange(e: any) {
     this.attempt = this.input!.nativeElement.innerText;
+    this.saveToLocalStorage();
     if (this.keyPressTimeout) {
       clearTimeout(this.keyPressTimeout);
     }
@@ -178,6 +184,9 @@ export class PracticeComponent
     in the diff, it will normalize the diff, find the corresponding substring in the normalized attempt,
     create a span element with the appropriate class, and append it to the input element.
     */
+    if (!this.input) {
+      return; 
+    }
     // Save selection position to restore after updating the UI
     const restorePosition = saveCaretPosition(this.input!.nativeElement);
     this.input!.nativeElement.innerHTML = '';
@@ -306,6 +315,7 @@ export class PracticeComponent
     selection.getRangeAt(0).insertNode(document.createTextNode(text));
     selection.collapseToEnd();
     this.attempt = this.input!.nativeElement.innerText;
+    this.saveToLocalStorage();
     this.processDiff();
   }
 
@@ -354,5 +364,16 @@ export class PracticeComponent
     componentRef.changeDetectorRef.detectChanges();
     const elementRef = componentRef.location.nativeElement;
     this.input?.nativeElement.appendChild(elementRef);
+  }
+
+  saveToLocalStorage() {
+    localStorage.setItem(this.STORAGE_KEY, this.attempt);
+  }
+
+  loadFromLocalStorage() {
+    const text = localStorage.getItem(this.STORAGE_KEY);
+    if (text) {
+      this.attempt = text;
+    }
   }
 } 

@@ -37,7 +37,7 @@
     (click)="this.annyang.abort()"
     (paste)="this.handlePaste($event)"
     contenteditable="true"
-  ></div>
+  >{{attempt ? attempt : ""}}</div>
   <div class="button-container">
     <div class="passage">
       <div class="passage-label">
